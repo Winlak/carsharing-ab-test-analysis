@@ -27,3 +27,5 @@ jobs:
         run: python -m pytest -q
       - name: Reproduce SQL mart, analysis, figures and notebook
         run: make reproduce-ci
+      - name: Verify pipeline leaves tracked artifacts unchanged
+        run: git diff --exit-code

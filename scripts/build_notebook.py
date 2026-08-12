@@ -9,22 +9,29 @@ ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOK_PATH = ROOT / "notebooks" / "ab_test_analysis.ipynb"
 
 
-def markdown(source: str):
-    return nbf.v4.new_markdown_cell(dedent(source).strip())
+def markdown(cell_id: str, source: str):
+    """Create a markdown cell with a stable notebook cell identifier."""
+    cell = nbf.v4.new_markdown_cell(dedent(source).strip())
+    cell["id"] = cell_id
+    return cell
 
 
-def code(source: str):
-    return nbf.v4.new_code_cell(dedent(source).strip())
+def code(cell_id: str, source: str):
+    """Create a code cell with a stable notebook cell identifier."""
+    cell = nbf.v4.new_code_cell(dedent(source).strip())
+    cell["id"] = cell_id
+    return cell
 
 
 def build_notebook() -> None:
     notebook = nbf.v4.new_notebook()
     notebook["metadata"] = {
         "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
-        "language_info": {"name": "python", "version": "3.11"},
+        "language_info": {"name": "python"},
     }
     notebook["cells"] = [
         markdown(
+            "title",
             """
             # A/B-тест подсказки при бронировании
 
@@ -39,6 +46,7 @@ def build_notebook() -> None:
             """
         ),
         markdown(
+            "context-methods",
             """
             ## Context & Methods
 
@@ -55,8 +63,9 @@ def build_notebook() -> None:
             сегменты заданы до treatment и не применяются для смены решения.
             """
         ),
-        markdown("## Data"),
+        markdown("data-heading", "## Data"),
         code(
+            "load-sources",
             """
             from pathlib import Path
             import json
@@ -78,6 +87,7 @@ def build_notebook() -> None:
             """
         ),
         code(
+            "validate-events",
             """
             # pandas filter + merge: проверить покрытие событий назначениями.
             post_assignment_events = events.merge(
@@ -87,8 +97,9 @@ def build_notebook() -> None:
             post_assignment_events.groupby(["variant", "event_name"], observed=True).size().unstack(fill_value=0)
             """
         ),
-        markdown("## Results"),
+        markdown("results-heading", "## Results"),
         code(
+            "build-mart",
             """
             # SQL builds a one-row-per-user mart with CTEs, joins and window functions.
             mart = build_mart(DATA_DIR, SQL_FILE)
@@ -97,6 +108,7 @@ def build_notebook() -> None:
             """
         ),
         code(
+            "itt-summary",
             """
             # pandas groupby makes the ITT denominators visible before inferential tests.
             mart.groupby("variant", observed=True).agg(
@@ -108,6 +120,7 @@ def build_notebook() -> None:
             """
         ),
         code(
+            "inferential-results",
             """
             results, segment_results = calculate_results(mart)
             print(json.dumps(results, ensure_ascii=False, indent=2))
@@ -115,6 +128,7 @@ def build_notebook() -> None:
             """
         ),
         code(
+            "city-chart",
             """
             city_rates = mart.groupby(["city", "variant"], observed=True)["booked"].mean().unstack()
             ax = (city_rates * 100).plot(kind="bar", figsize=(9, 4), color=["#7f8c8d", "#2166ac"])
@@ -127,6 +141,7 @@ def build_notebook() -> None:
             """
         ),
         markdown(
+            "takeaways",
             """
             ## Takeaways
 

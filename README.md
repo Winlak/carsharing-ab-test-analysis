@@ -96,6 +96,10 @@ make reproduce
 `notebooks/ab_test_analysis.ipynb`. `make reproduce-ci` использует тот же
 полный детерминированный сценарий, что и `make reproduce`.
 
+После выполнения notebook pipeline автоматически удаляет только volatile
+execution timestamps из Jupyter metadata: полезные code cells, execution counts
+и outputs сохраняются. Поэтому повторный запуск не изменяет tracked notebook.
+
 ## Проверки и воспроизводимость
 
 ```bash

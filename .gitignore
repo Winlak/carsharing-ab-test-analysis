@@ -1,0 +1,9 @@
+.DS_Store
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+data/generated/
+work/
+*.pyc

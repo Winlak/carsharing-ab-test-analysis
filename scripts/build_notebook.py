@@ -71,7 +71,6 @@ def build_notebook() -> None:
             import json
             import sys
             import pandas as pd
-            import matplotlib.pyplot as plt
 
             ROOT = Path.cwd().resolve()
             if not (ROOT / "src").exists():
@@ -131,13 +130,8 @@ def build_notebook() -> None:
             "city-chart",
             """
             city_rates = mart.groupby(["city", "variant"], observed=True)["booked"].mean().unstack()
-            ax = (city_rates * 100).plot(kind="bar", figsize=(9, 4), color=["#7f8c8d", "#2166ac"])
-            ax.set_ylabel("Конверсия в бронирование, %")
-            ax.set_xlabel("Город (предзаданный сегмент)")
-            ax.set_title("Конверсия по городам")
-            ax.legend(title="Вариант")
-            plt.tight_layout()
-            plt.show()
+            # Визуализация сохраняется pipeline как reports/figures/conversion_by_city.svg.
+            (city_rates * 100).round(2)
             """
         ),
         markdown(

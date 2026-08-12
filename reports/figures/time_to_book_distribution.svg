@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1220" height="470" viewBox="0 0 1220 470" role="img">
+  <text x="610.00" y="32.00" fill="#243447" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">Распределение time-to-book среди бронирований</text>
+  <line x1="100.00" y1="80.00" x2="100.00" y2="375.00" stroke="#d9e1e8" stroke-width="1.00"/>
+  <text x="100.00" y="405.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="middle">20</text>
+  <line x1="183.61" y1="80.00" x2="183.61" y2="375.00" stroke="#d9e1e8" stroke-width="1.00"/>
+  <text x="183.61" y="405.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="middle">120</text>
+  <line x1="267.21" y1="80.00" x2="267.21" y2="375.00" stroke="#d9e1e8" stroke-width="1.00"/>
+  <text x="267.21" y="405.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="middle">220</text>
+  <line x1="350.82" y1="80.00" x2="350.82" y2="375.00" stroke="#d9e1e8" stroke-width="1.00"/>
+  <text x="350.82" y="405.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="middle">320</text>
+  <line x1="434.43" y1="80.00" x2="434.43" y2="375.00" stroke="#d9e1e8" stroke-width="1.00"/>
+  <text x="434.43" y="405.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="middle">420</text>
+  <line x1="518.03" y1="80.00" x2="518.03" y2="375.00" stroke="#d9e1e8" stroke-width="1.00"/>
+  <text x="518.03" y="405.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="middle">520</text>
+  <line x1="601.64" y1="80.00" x2="601.64" y2="375.00" stroke="#d9e1e8" stroke-width="1.00"/>
+  <text x="601.64" y="405.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="middle">620</text>
+  <line x1="685.25" y1="80.00" x2="685.25" y2="375.00" stroke="#d9e1e8" stroke-width="1.00"/>
+  <text x="685.25" y="405.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="middle">720</text>
+  <line x1="768.85" y1="80.00" x2="768.85" y2="375.00" stroke="#d9e1e8" stroke-width="1.00"/>
+  <text x="768.85" y="405.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="middle">820</text>
+  <line x1="852.46" y1="80.00" x2="852.46" y2="375.00" stroke="#d9e1e8" stroke-width="1.00"/>
+  <text x="852.46" y="405.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="middle">920</text>
+  <line x1="936.07" y1="80.00" x2="936.07" y2="375.00" stroke="#d9e1e8" stroke-width="1.00"/>
+  <text x="936.07" y="405.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="middle">1020</text>
+  <line x1="1019.67" y1="80.00" x2="1019.67" y2="375.00" stroke="#d9e1e8" stroke-width="1.00"/>
+  <text x="1019.67" y="405.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="middle">1120</text>
+  <line x1="1103.28" y1="80.00" x2="1103.28" y2="375.00" stroke="#d9e1e8" stroke-width="1.00"/>
+  <text x="1103.28" y="405.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="middle">1220</text>
+  <line x1="100.00" y1="375.00" x2="1120.00" y2="375.00" stroke="#243447" stroke-width="1.50"/>
+  <text x="610.00" y="445.00" fill="#243447" font-family="Arial, sans-serif" font-size="14" text-anchor="middle">Время от экрана до бронирования, секунд</text>
+  <text x="100.00" y="62.00" fill="#243447" font-family="Arial, sans-serif" font-size="14" text-anchor="start">Плотность</text>
+  <polyline points="114.57,355.27 143.71,233.66 172.86,117.17 202.00,108.18 231.14,143.55 260.29,203.89 289.43,259.80 318.57,303.22 347.71,326.91 376.86,342.44 406.00,352.36 435.14,361.69 464.29,366.83 493.43,369.40 522.57,371.15 551.71,373.25 580.86,373.60 610.00,373.95 639.14,374.77 668.29,374.18 697.43,374.65 726.57,374.77 755.71,374.65 784.86,375.00 814.00,375.00 843.14,374.65 872.29,375.00 901.43,375.00 930.57,375.00 959.71,375.00 988.86,375.00 1018.00,375.00 1047.14,375.00 1076.29,375.00 1105.43,374.88" fill="none" stroke="#7f8c8d" stroke-width="2"/>
+  <polyline points="114.57,360.19 143.71,247.08 172.86,112.23 202.00,101.85 231.14,139.27 260.29,215.29 289.43,257.57 318.57,294.66 347.71,322.23 376.86,345.70 406.00,355.00 435.14,361.27 464.29,366.13 493.43,369.59 522.57,370.57 551.71,372.19 580.86,371.86 610.00,373.70 639.14,374.57 668.29,374.24 697.43,374.89 726.57,374.78 755.71,374.57 784.86,374.78 814.00,375.00 843.14,375.00 872.29,374.89 901.43,375.00 930.57,375.00 959.71,374.89 988.86,374.89 1018.00,375.00 1047.14,375.00 1076.29,375.00 1105.43,375.00" fill="none" stroke="#2166ac" stroke-width="2"/>
+  <line x1="900.00" y1="57.00" x2="925.00" y2="57.00" stroke="#7f8c8d" stroke-width="3.00"/>
+  <text x="934.00" y="62.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="start">Control</text>
+  <line x1="1000.00" y1="57.00" x2="1025.00" y2="57.00" stroke="#2166ac" stroke-width="3.00"/>
+  <text x="1034.00" y="62.00" fill="#243447" font-family="Arial, sans-serif" font-size="13" text-anchor="start">Treatment</text>
+</svg>

@@ -15,7 +15,7 @@ time-to-book прошли non-inferiority относительно марж +1.0
 
 ## Эффект виден в primary, а guardrail-метрики не ухудшились
 
-![Эффект и guardrail-метрики](figures/effect_and_guardrails.png)
+![Эффект и guardrail-метрики](figures/effect_and_guardrails.svg)
 
 Основной тест — односторонний тест превосходства для treatment − control по
 конверсии. Guardrails тестируются как non-inferiority: рост cancellation rate не
@@ -72,7 +72,7 @@ lift 2.80 п.п. превышает и MDE, и бизнес-порог
 
 ## Сегменты — диагностический срез, а не поиск победителя
 
-![Конверсия по городам](figures/conversion_by_city.png)
+![Конверсия по городам](figures/conversion_by_city.svg)
 
 Срезы по `platform`, `city`, `is_new_user` и `trips_30d_bucket` определены до
 анализа по признакам, доступным до treatment. Ни один сегмент не использован для изменения решения; все срезы предзаданы, а 12 p-value скорректированы Holm внутри сегментного семейства. Данные не

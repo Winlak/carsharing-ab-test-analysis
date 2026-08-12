@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Any
 
 import duckdb
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -29,6 +28,11 @@ from .statistics import (
     srm_check,
     welch_noninferiority,
 )
+from .svg_figures import (
+    write_conversion_by_city,
+    write_effect_and_guardrails,
+    write_time_distribution,
+)
 
 VARIANT_ORDER = ["control", "treatment"]
 
@@ -37,10 +41,10 @@ def _native(value: Any) -> Any:
     """Convert NumPy/Pandas scalars for stable JSON output."""
     if isinstance(value, (np.integer,)):
         return int(value)
-    if isinstance(value, (np.floating,)):
-        return float(value)
+    if isinstance(value, (float, np.floating)):
+        return float(f"{float(value):.12g}")
     if isinstance(value, np.ndarray):
-        return value.tolist()
+        return [_native(item) for item in value.tolist()]
     if isinstance(value, dict):
         return {key: _native(item) for key, item in value.items()}
     if isinstance(value, list):
@@ -194,6 +198,8 @@ def summarize_segments(mart: pd.DataFrame) -> pd.DataFrame:
     if not segment_results.empty:
         segment_results["p_value_holm"] = holm_adjust(segment_results["p_value"].tolist())
         segment_results = segment_results.sort_values(["segment", "level"]).reset_index(drop=True)
+        numeric_columns = segment_results.select_dtypes(include="number").columns
+        segment_results[numeric_columns] = segment_results[numeric_columns].round(12)
     return segment_results
 
 
@@ -267,98 +273,12 @@ def calculate_results(mart: pd.DataFrame) -> tuple[dict[str, Any], pd.DataFrame]
 
 
 def save_figures(mart: pd.DataFrame, results: dict[str, Any], output_dir: Path) -> None:
-    """Save report-ready figures with explicit scales, units, and samples."""
+    """Save platform-independent report-ready SVG figures."""
     figure_dir = output_dir / "figures"
     figure_dir.mkdir(parents=True, exist_ok=True)
-    primary = results["primary_conversion"]
-    cancellation = results["guardrail_cancellation"]
-    time_to_book = results["guardrail_time_to_book"]
-
-    plt.style.use("seaborn-v0_8-whitegrid")
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.8), constrained_layout=True)
-    rate_metrics = [
-        ("Конверсия в бронирование", primary),
-        ("Cancellation rate", cancellation),
-    ]
-    y_positions = np.arange(len(rate_metrics))
-    point_estimates = [100 * item[1]["difference"] for item in rate_metrics]
-    lower_errors = [100 * (item[1]["difference"] - item[1]["ci_low"]) for item in rate_metrics]
-    upper_errors = [100 * (item[1]["ci_high"] - item[1]["difference"]) for item in rate_metrics]
-    axes[0].errorbar(
-        point_estimates,
-        y_positions,
-        xerr=[lower_errors, upper_errors],
-        fmt="o",
-        color="#2166ac",
-        ecolor="#16324f",
-        capsize=4,
-    )
-    axes[0].axvline(0, color="#343a40", linewidth=1)
-    axes[0].set_yticks(y_positions, [item[0] for item in rate_metrics])
-    axes[0].set_xlabel("Treatment − control, п.п. (95% CI)")
-    axes[0].set_title("Разность rate-метрик")
-    time_lower = time_to_book["difference"] - time_to_book["ci_low"]
-    time_upper = time_to_book["ci_high"] - time_to_book["difference"]
-    axes[1].errorbar(
-        [time_to_book["difference"]],
-        [0],
-        xerr=[[time_lower], [time_upper]],
-        fmt="o",
-        color="#8c510a",
-        ecolor="#543005",
-        capsize=4,
-    )
-    axes[1].axvline(0, color="#343a40", linewidth=1)
-    axes[1].axvline(
-        TIME_TO_BOOK_NI_MARGIN_SECONDS,
-        color="#8c510a",
-        linewidth=1,
-        linestyle="--",
-        label=f"NI-маржа +{TIME_TO_BOOK_NI_MARGIN_SECONDS:.0f} сек.",
-    )
-    axes[1].set_yticks([])
-    axes[1].set_xlabel("Treatment − control, секунд (95% CI)")
-    axes[1].set_title("Time-to-book среди бронирований")
-    axes[1].legend(frameon=False, loc="best")
-    fig.suptitle("Эффект и guardrail-метрики: intention-to-treat", fontsize=13)
-    fig.savefig(figure_dir / "effect_and_guardrails.png", dpi=180, bbox_inches="tight")
-    plt.close(fig)
-
-    segment = mart.groupby(["city", "variant"], observed=True).agg(
-        conversion=("booked", "mean"), users=("user_id", "nunique")
-    ).reset_index()
-    pivot = segment.pivot(index="city", columns="variant", values="conversion").reindex(columns=VARIANT_ORDER)
-    cities = pivot.index.tolist()
-    y_positions = np.arange(len(cities))
-    fig, axis = plt.subplots(figsize=(8, 4.8), constrained_layout=True)
-    axis.scatter(pivot["control"] * 100, y_positions, color="#7f8c8d", label="Control", marker="s")
-    axis.scatter(pivot["treatment"] * 100, y_positions, color="#2166ac", label="Treatment", marker="o")
-    for position, city_name in enumerate(cities):
-        axis.plot(
-            [pivot.loc[city_name, "control"] * 100, pivot.loc[city_name, "treatment"] * 100],
-            [position, position],
-            color="#bdc3c7",
-            zorder=0,
-        )
-    axis.set_yticks(y_positions, cities)
-    axis.set_xlabel("Конверсия в бронирование, %")
-    axis.set_title("Конверсия по предзаданным городам")
-    axis.legend(frameon=False)
-    fig.savefig(figure_dir / "conversion_by_city.png", dpi=180, bbox_inches="tight")
-    plt.close(fig)
-
-    fig, axis = plt.subplots(figsize=(8, 4.8), constrained_layout=True)
-    for variant, color in zip(VARIANT_ORDER, ["#7f8c8d", "#2166ac"]):
-        values = mart.loc[
-            (mart["variant"] == variant) & (mart["booked"] == 1), "time_to_book_seconds"
-        ]
-        axis.hist(values, bins=35, density=True, alpha=0.45, label=variant.title(), color=color)
-    axis.set_xlabel("Время от экрана до бронирования, секунд")
-    axis.set_ylabel("Плотность")
-    axis.set_title("Распределение time-to-book среди бронирований")
-    axis.legend(frameon=False)
-    fig.savefig(figure_dir / "time_to_book_distribution.png", dpi=180, bbox_inches="tight")
-    plt.close(fig)
+    write_effect_and_guardrails(results, figure_dir / "effect_and_guardrails.svg")
+    write_conversion_by_city(mart, figure_dir / "conversion_by_city.svg")
+    write_time_distribution(mart, figure_dir / "time_to_book_distribution.svg")
 
 
 def render_quality_report(checks: list[dict[str, Any]]) -> str:
@@ -410,7 +330,7 @@ time-to-book прошли non-inferiority относительно марж +{CA
 
 ## Эффект виден в primary, а guardrail-метрики не ухудшились
 
-![Эффект и guardrail-метрики](figures/effect_and_guardrails.png)
+![Эффект и guardrail-метрики](figures/effect_and_guardrails.svg)
 
 Основной тест — односторонний тест превосходства для treatment − control по
 конверсии. Guardrails тестируются как non-inferiority: рост cancellation rate не
@@ -467,7 +387,7 @@ lift {100 * primary['difference']:.2f} п.п. превышает и MDE, и би
 
 ## Сегменты — диагностический срез, а не поиск победителя
 
-![Конверсия по городам](figures/conversion_by_city.png)
+![Конверсия по городам](figures/conversion_by_city.svg)
 
 Срезы по `platform`, `city`, `is_new_user` и `trips_30d_bucket` определены до
 анализа по признакам, доступным до treatment. {segment_statement} Данные не
@@ -515,7 +435,7 @@ def run(data_dir: Path, sql_file: Path, output_dir: Path) -> dict[str, Any]:
         raise ValueError(f"Data-quality checks failed: {names}")
     results, segments = calculate_results(mart)
     save_figures(mart, results, output_dir)
-    segments.to_csv(output_dir / "segment_results.csv", index=False)
+    segments.to_csv(output_dir / "segment_results.csv", index=False, float_format="%.12g")
     (output_dir / "analysis_results.json").write_text(
         json.dumps(_native(results), ensure_ascii=False, indent=2) + "\n"
     )

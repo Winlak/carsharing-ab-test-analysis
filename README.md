@@ -118,7 +118,7 @@ GitHub Actions запускает эти проверки на каждом push
 src/                    генератор, статистика и orchestration pipeline
 sql/                    SQL-витрина из событий
 notebooks/              выполненный читабельный Jupyter notebook
-reports/                отчёт, data-quality checks, результаты и PNG-графики
+reports/                отчёт, data-quality checks, результаты и SVG-графики
 tests/                  unit- и end-to-end проверки
 .github/workflows/      CI: lint, tests, reproducibility
 ```

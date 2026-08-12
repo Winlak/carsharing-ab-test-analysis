@@ -47,12 +47,12 @@ def main() -> None:
     ]
     assert not notebook_errors, "Executed notebook contains errors"
     for figure in [
-        "effect_and_guardrails.png",
-        "conversion_by_city.png",
-        "time_to_book_distribution.png",
+        "effect_and_guardrails.svg",
+        "conversion_by_city.svg",
+        "time_to_book_distribution.svg",
     ]:
         path = report_dir / "figures" / figure
-        assert path.exists() and path.stat().st_size > 10_000, f"Missing or empty figure: {figure}"
+        assert path.exists() and path.stat().st_size > 2_000, f"Missing or empty figure: {figure}"
 
     report = f"""# Validation report
 
@@ -74,7 +74,7 @@ def main() -> None:
 
 ### Visualization and Notebook Review
 
-Три PNG-графика существуют и не пусты; executed notebook не содержит ошибок.
+Три SVG-графика существуют и не пусты; executed notebook не содержит ошибок.
 Это структурная QA-проверка, а не кроссбраузерный тест рендеринга Markdown.
 
 ### Required Caveats

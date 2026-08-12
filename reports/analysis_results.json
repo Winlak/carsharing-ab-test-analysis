@@ -3,8 +3,8 @@
     "control_n": 29854,
     "treatment_n": 30146,
     "expected_per_variant": 30000.0,
-    "chi_square": 1.4210666666666667,
-    "p_value": 0.23322791476062285
+    "chi_square": 1.42106666667,
+    "p_value": 0.233227914761
   },
   "variant_summary": [
     {
@@ -12,55 +12,55 @@
       "users": 29854,
       "exposed": 0.0,
       "bookings": 12133,
-      "conversion": 0.4064112011790715
+      "conversion": 0.406411201179
     },
     {
       "variant": "treatment",
       "users": 30146,
-      "exposed": 0.9643733828700325,
+      "exposed": 0.96437338287,
       "bookings": 13096,
-      "conversion": 0.4344191600875738
+      "conversion": 0.434419160088
     }
   ],
   "primary_conversion": {
     "control_n": 29854,
     "treatment_n": 30146,
-    "control_rate": 0.4064112011790715,
-    "treatment_rate": 0.4344191600875738,
-    "difference": 0.02800795890850233,
-    "ci_low": 0.02011171078668287,
-    "ci_high": 0.03590420703032179,
-    "z_stat": 6.948876425865563,
-    "p_value": 1.8410344583288065e-12,
-    "p_value_holm": 3.682068916657613e-12
+    "control_rate": 0.406411201179,
+    "treatment_rate": 0.434419160088,
+    "difference": 0.0280079589085,
+    "ci_low": 0.0201117107867,
+    "ci_high": 0.0359042070303,
+    "z_stat": 6.94887642587,
+    "p_value": 1.84103445833e-12,
+    "p_value_holm": 3.68206891666e-12
   },
   "guardrail_cancellation": {
     "control_n": 12133,
     "treatment_n": 13096,
-    "control_rate": 0.08851891535481744,
-    "treatment_rate": 0.08987477092241906,
-    "difference": 0.0013558555676016215,
-    "ci_low": -0.0056825391710035155,
-    "ci_high": 0.008394250306206759,
-    "z_stat": 0.37746181090868414,
-    "p_value": 0.008039596000166523,
+    "control_rate": 0.0885189153548,
+    "treatment_rate": 0.0898747709224,
+    "difference": 0.0013558555676,
+    "ci_low": -0.005682539171,
+    "ci_high": 0.00839425030621,
+    "z_stat": 0.377461810909,
+    "p_value": 0.00803959600017,
     "margin": 0.01,
-    "ni_z_stat": -2.4071130412359967,
-    "p_value_holm": 0.008039596000166523
+    "ni_z_stat": -2.40711304124,
+    "p_value_holm": 0.00803959600017
   },
   "guardrail_time_to_book": {
     "control_n": 12133,
     "treatment_n": 13096,
-    "control_mean": 180.82675348223853,
-    "treatment_mean": 183.18982895540623,
-    "difference": 2.3630754731676973,
-    "ci_low": 0.08115751285244333,
-    "ci_high": 4.644993433482951,
+    "control_mean": 180.826753482,
+    "treatment_mean": 183.189828955,
+    "difference": 2.36307547317,
+    "ci_low": 0.0811575128524,
+    "ci_high": 4.64499343348,
     "margin": 30.0,
-    "welch_df": 25129.659166953144,
-    "t_stat": -23.73879637298661,
-    "p_value": 1.6304115938008027e-123,
-    "p_value_holm": 4.8912347814024084e-123
+    "welch_df": 25129.659167,
+    "t_stat": -23.738796373,
+    "p_value": 1.6304115938e-123,
+    "p_value_holm": 4.8912347814e-123
   },
   "multiplicity": {
     "method": "Holm",
@@ -70,9 +70,9 @@
   "power_and_mde": {
     "power_target": 0.8,
     "planning_alpha": 0.05,
-    "control_baseline": 0.4064112011790715,
+    "control_baseline": 0.406411201179,
     "n_per_arm": 29854,
-    "mde_absolute": 0.011286322530103117
+    "mde_absolute": 0.0112863225301
   },
   "decision": {
     "recommendation": "launch",

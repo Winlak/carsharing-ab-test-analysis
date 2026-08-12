@@ -18,7 +18,7 @@
 
 ### Visualization and Notebook Review
 
-Три PNG-графика существуют и не пусты; executed notebook не содержит ошибок.
+Три SVG-графика существуют и не пусты; executed notebook не содержит ошибок.
 Это структурная QA-проверка, а не кроссбраузерный тест рендеринга Markdown.
 
 ### Required Caveats

@@ -76,6 +76,8 @@
   },
   "decision": {
     "recommendation": "launch",
+    "randomization_valid": true,
+    "srm_alpha": 0.01,
     "statistical_significance": true,
     "product_significance": true,
     "cancellation_noninferior": true,

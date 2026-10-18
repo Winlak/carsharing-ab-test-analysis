@@ -35,7 +35,7 @@ def build_notebook() -> None:
             """
             # A/B-тест подсказки при бронировании
 
-            ## tl;dr
+            ## Краткие результаты
 
             **Решение: LAUNCH с постепенным rollout.** В зафиксированной synthetic
             реализации treatment увеличивает conversion с 40.64% до 43.44%:
@@ -48,7 +48,7 @@ def build_notebook() -> None:
         markdown(
             "context-methods",
             """
-            ## Context & Methods
+            ## Задача и методика
 
             **Решение:** запускать ли новую подсказку на экране бронирования.
 
@@ -57,13 +57,13 @@ def build_notebook() -> None:
             **Дизайн:** user-level 50:50 A/B, ITT-анализ, Holm для семьи из primary и
             двух guardrails. Синтетические данные не относятся к реальному каршерингу.
 
-            ### Key Assumptions
+            ### Допущения
 
             Когорта состоит из eligible пользователей с созревшим 24-часовым окном;
             сегменты заданы до treatment и не применяются для смены решения.
             """
         ),
-        markdown("data-heading", "## Data"),
+        markdown("data-heading", "## Данные"),
         code(
             "load-sources",
             """
@@ -96,7 +96,7 @@ def build_notebook() -> None:
             post_assignment_events.groupby(["variant", "event_name"], observed=True).size().unstack(fill_value=0)
             """
         ),
-        markdown("results-heading", "## Results"),
+        markdown("results-heading", "## Расчёты"),
         code(
             "build-mart",
             """
@@ -137,11 +137,12 @@ def build_notebook() -> None:
         markdown(
             "takeaways",
             """
-            ## Takeaways
+            ## Выводы
 
             Посмотрите `reports/analysis_report.md` для итогового решения и `reports/analysis_results.json`
             для машиночитаемых оценок. Launch разрешён только если Holm-скорректированный
-            primary-тест положителен и оба guardrail non-inferiority теста пройдены.
+            primary-тест положителен, эффект превышает продуктовый порог, оба guardrail
+            non-inferiority теста пройдены и SRM не обнаружен (p > 0.01).
             """
         ),
     ]

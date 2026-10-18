@@ -18,6 +18,7 @@ from .config import (
     MIN_SEGMENT_ARM_SIZE,
     POWER_TARGET,
     SEGMENT_COLUMNS,
+    SRM_ALPHA,
     TIME_TO_BOOK_NI_MARGIN_SECONDS,
 )
 from .statistics import (
@@ -244,7 +245,9 @@ def calculate_results(mart: pd.DataFrame) -> tuple[dict[str, Any], pd.DataFrame]
     primary_pass = primary["p_value_holm"] < ALPHA and 100 * primary["difference"] >= MIN_PRODUCT_LIFT_PP
     cancellation_pass = cancellation["p_value_holm"] < ALPHA
     time_pass = time_to_book["p_value_holm"] < ALPHA
-    decision = "launch" if primary_pass and cancellation_pass and time_pass else "iterate"
+    srm_pass = srm["p_value"] > SRM_ALPHA
+    decision = ("invalid" if not srm_pass else
+                "launch" if primary_pass and cancellation_pass and time_pass else "iterate")
 
     summary = {
         "sample_ratio_mismatch": srm,
@@ -262,6 +265,8 @@ def calculate_results(mart: pd.DataFrame) -> tuple[dict[str, Any], pd.DataFrame]
         },
         "decision": {
             "recommendation": decision,
+            "randomization_valid": srm_pass,
+            "srm_alpha": SRM_ALPHA,
             "statistical_significance": primary["p_value_holm"] < ALPHA,
             "product_significance": 100 * primary["difference"] >= MIN_PRODUCT_LIFT_PP,
             "cancellation_noninferior": cancellation_pass,
@@ -312,23 +317,39 @@ def render_analysis_report(results: dict[str, Any], checks: list[dict[str, Any]]
         "Ни один сегмент не использован для изменения решения; все срезы предзаданы, "
         f"а {len(segments)} p-value скорректированы Holm внутри сегментного семейства."
     )
-    decision_text = "LAUNCH" if decision["recommendation"] == "launch" else "ITERATE"
+    decision_text = decision["recommendation"].upper()
+    product_status = "выполнен" if decision["product_significance"] else "не выполнен"
+    cancellation_status = "пройдено" if decision["cancellation_noninferior"] else "не пройдено"
+    time_status = "пройдено" if decision["time_to_book_noninferior"] else "не пройдено"
+    srm_statement = (
+        "SRM не обнаружен." if decision["randomization_valid"] else
+        "Обнаружен SRM: рекомендация запуска заблокирована. Сначала нужно проверить назначения и сбор данных."
+    )
+    next_step = (
+        "Для реального эксперимента с таким результатом можно было бы спланировать постепенный rollout, "
+        "заранее зафиксировав окно наблюдения, маржи и правила анализа. Здесь результат относится только к симуляции."
+        if decision["recommendation"] == "launch" else
+        "Запуск не рекомендован. Сначала проверить рандомизацию и качество данных, "
+        "затем пересмотреть гипотезу и спланировать новый эксперимент."
+    )
     return f"""# A/B-тест подсказки при бронировании — технический отчёт
 
 ## Техническое резюме
 
-**Решение: {decision_text}.** В synthetic ITT-когорте подсказка повысила conversion to booking
-на **{100 * primary['difference']:.2f} п.п.**: {100 * primary['control_rate']:.2f}% →
-{100 * primary['treatment_rate']:.2f}% (95% CI {100 * primary['ci_low']:.2f}…
-{100 * primary['ci_high']:.2f} п.п.; Holm p={primary['p_value_holm']:.4g}). Это больше
-предзаданного продуктового порога {MIN_PRODUCT_LIFT_PP:.1f} п.п. Cancellation rate и
-time-to-book прошли non-inferiority относительно марж +{CANCELLATION_NI_MARGIN_PP:.1f} п.п.
-и +{TIME_TO_BOOK_NI_MARGIN_SECONDS:.0f} сек. соответственно.
+**Решение: {decision_text}.** Разность конверсии treatment − control в учебной ITT-когорте:
+**{100 * primary['difference']:.2f} п.п.** ({100 * primary['control_rate']:.2f}% →
+{100 * primary['treatment_rate']:.2f}%; 95% CI {100 * primary['ci_low']:.2f}…
+{100 * primary['ci_high']:.2f} п.п.; Holm p={primary['p_value_holm']:.4g}).
+Порог практического эффекта — {MIN_PRODUCT_LIFT_PP:.1f} п.п. ({product_status}).
+Условие non-inferiority для отмен {cancellation_status};
+для времени бронирования {time_status}.
+Маржи — +{CANCELLATION_NI_MARGIN_PP:.1f} п.п. и +{TIME_TO_BOOK_NI_MARGIN_SECONDS:.0f} секунд.
+Запуск допустим только при выполнении всех условий и отсутствии SRM.
 
 Данные и результат целиком синтетические: это демонстрация аналитического процесса, а
 не измерение поведения клиентов или результатов какого-либо оператора каршеринга.
 
-## Эффект виден в primary, а guardrail-метрики не ухудшились
+## Эффект и допустимые маржи защитных метрик
 
 ![Эффект и guardrail-метрики](figures/effect_and_guardrails.svg)
 
@@ -344,7 +365,11 @@ time-to-book прошли non-inferiority относительно марж +{CA
 | Cancellation rate среди бронирований | {100 * cancellation['control_rate']:.2f}% | {100 * cancellation['treatment_rate']:.2f}% | {100 * cancellation['difference']:.2f} п.п. | {100 * cancellation['ci_low']:.2f}…{100 * cancellation['ci_high']:.2f} п.п. | {cancellation['p_value_holm']:.4g} | NI < +{CANCELLATION_NI_MARGIN_PP:.1f} п.п. |
 | Time-to-book среди бронирований | {time_to_book['control_mean']:.1f} с | {time_to_book['treatment_mean']:.1f} с | {time_to_book['difference']:.1f} с | {time_to_book['ci_low']:.1f}…{time_to_book['ci_high']:.1f} с | {time_to_book['p_value_holm']:.4g} | NI < +{TIME_TO_BOOK_NI_MARGIN_SECONDS:.0f} с |
 
-## Популяция и определения делают сравнение проверяемым
+Non-inferiority не означает отсутствия ухудшения: она проверяет, что рост метрики
+меньше заранее установленной допустимой маржи. Оценку изменения и интервал
+нужно читать отдельно от результата этого теста.
+
+## Популяция и определения
 
 - **Единица рандомизации и анализа:** пользователь, один раз назначенный в
   `control` или `treatment`; primary-анализ — intention-to-treat, а не только
@@ -366,26 +391,26 @@ SQL-витрина в `sql/experiment_mart.sql` применяет CTE, `INNER/L
 релевантного события. Python загружает CSV, фильтрует когорту, использует
 `merge`, `groupby` и независимые статистические функции.
 
-## Рандомизация и качество данных не дают явного повода не доверять оценке
+## Проверка рандомизации и качества данных
 
 SRM: control={int(srm['control_n']):,}, treatment={int(srm['treatment_n']):,},
-χ²={srm['chi_square']:.3f}, p={srm['p_value']:.4f}. При α=0.01 SRM не обнаружен.
+χ²={srm['chi_square']:.3f}, p={srm['p_value']:.4f}. При α={SRM_ALPHA:.2f} {srm_statement}
 Из {len(checks)} автоматических проверок качества пройдены {sum(item['status'] == 'pass' for item in checks)}:
 уникальность assignment и event_id, отсутствие пересечений вариантов и показа
 в control, временная корректность, покрытие JOIN и один пользователь на строку
 витрины. Полная таблица — в `reports/data_quality_report.md`.
 
-## Мощность достаточна для практического, а не только статистического эффекта
+## Мощность и порог практического эффекта
 
-До чтения результатов зафиксированы α={ALPHA:.2f}, целевая мощность
-{POWER_TARGET:.0%} и равные плечи. При фактическом baseline
-{100 * power['control_baseline']:.2f}% и n={int(power['n_per_arm']):,} на вариант
-двусторонний MDE равен **{100 * power['mde_absolute']:.2f} п.п.**. Наблюдаемый
-lift {100 * primary['difference']:.2f} п.п. превышает и MDE, и бизнес-порог
-{MIN_PRODUCT_LIFT_PP:.1f} п.п.; поэтому статистическая значимость здесь имеет
-продуктовый смысл.
+Параметры расчёта: α={ALPHA:.2f}, целевая мощность {POWER_TARGET:.0%}.
+При наблюдаемом baseline {100 * power['control_baseline']:.2f}% и
+n={int(power['n_per_arm']):,} на вариант двусторонний MDE равен
+**{100 * power['mde_absolute']:.2f} п.п.** Оценка эффекта составляет
+{100 * primary['difference']:.2f} п.п.; продуктовый порог — {MIN_PRODUCT_LIFT_PP:.1f} п.п.
+Этот MDE иллюстрирует чувствительность дизайна и не является независимым
+подтверждением эффекта. При нарушении рандомизации запуск всё равно заблокирован.
 
-## Сегменты — диагностический срез, а не поиск победителя
+## Разбор сегментов
 
 ![Конверсия по городам](figures/conversion_by_city.svg)
 
@@ -408,10 +433,7 @@ eligible-аудитории.
 
 ## Следующий шаг
 
-Запустить постепенный rollout на 50% eligible-трафика на 2 недели, сохранив
-assignment и event-логирование. Мониторить conversion, cancellation и
-time-to-book ежедневно без многократной остановки теста; для решения после
-rollout заранее зафиксировать окно, маржи и правила последовательного анализа.
+{next_step}
 
 ## Открытые вопросы
 

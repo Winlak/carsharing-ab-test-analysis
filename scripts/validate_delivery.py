@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 from src.config import SEGMENT_COLUMNS, SRM_ALPHA
+from src.notebook_view import validate_notebook_outputs
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -50,6 +51,7 @@ def main() -> None:
         if output.output_type == "error"
     ]
     assert not notebook_errors, "Executed notebook contains errors"
+    validate_notebook_outputs(notebook, results, mart)
     for figure in [
         "effect_and_guardrails.svg",
         "conversion_by_city.svg",
@@ -78,7 +80,8 @@ def main() -> None:
 
 ### Графики и ноутбук
 
-Три SVG-графика существуют и не пусты; executed notebook не содержит ошибок.
+Три SVG-графика существуют и не пусты; ноутбук исполнен без ошибок.
+Вывод и таблица ноутбука сверены с текущими результатами и знаменателями метрик.
 Это структурная QA-проверка, а не кроссбраузерный тест рендеринга Markdown.
 
 ### Ограничения

@@ -14,6 +14,7 @@ analyze:
 	$(PYTHON) -m src.run_analysis --data-dir $(DATA_DIR) --sql-file sql/experiment_mart.sql --output-dir reports
 
 notebook:
+	$(PYTHON) -m scripts.build_notebook
 	$(PYTHON) -m jupyter nbconvert --execute --to notebook --inplace notebooks/ab_test_analysis.ipynb --ExecutePreprocessor.timeout=180
 	$(PYTHON) -m scripts.normalize_notebook notebooks/ab_test_analysis.ipynb
 
@@ -25,6 +26,7 @@ reproduce: data analyze notebook
 reproduce-ci:
 	$(PYTHON) -m src.generate_data --output-dir $(DATA_DIR) --n-users 60000 --seed 20250812
 	$(PYTHON) -m src.run_analysis --data-dir $(DATA_DIR) --sql-file sql/experiment_mart.sql --output-dir reports
+	$(PYTHON) -m scripts.build_notebook
 	$(PYTHON) -m jupyter nbconvert --execute --to notebook --inplace notebooks/ab_test_analysis.ipynb --ExecutePreprocessor.timeout=180
 	$(PYTHON) -m scripts.normalize_notebook notebooks/ab_test_analysis.ipynb
 	$(PYTHON) -m scripts.validate_delivery

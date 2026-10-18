@@ -35,14 +35,8 @@ def build_notebook() -> None:
             """
             # A/B-тест подсказки при бронировании
 
-            ## Краткие результаты
-
-            **Решение: LAUNCH с постепенным rollout.** В зафиксированной synthetic
-            реализации treatment увеличивает conversion с 40.64% до 43.44%:
-            +2.80 п.п. (95% CI +2.01…+3.59 п.п.; Holm p < 0.001). Это выше MDE
-            1.13 п.п. и продуктового порога +0.7 п.п. Cancellation и time-to-book
-            проходят предзаданные non-inferiority маржи. Ниже — воспроизводимый
-            путь от событий к этому решению.
+            Ниже — расчёт по текущей SQL-витрине. Решение и числа обновляются
+            при каждом выполнении ноутбука; данные сгенерированы.
             """
         ),
         markdown(
@@ -68,9 +62,9 @@ def build_notebook() -> None:
             "load-sources",
             """
             from pathlib import Path
-            import json
             import sys
             import pandas as pd
+            from IPython.display import HTML, Markdown, display
 
             ROOT = Path.cwd().resolve()
             if not (ROOT / "src").exists():
@@ -78,6 +72,7 @@ def build_notebook() -> None:
             sys.path.insert(0, str(ROOT))
 
             from src.run_analysis import build_mart, calculate_results, load_sources, quality_checks
+            from src.notebook_view import experiment_overview, notebook_summary
 
             DATA_DIR = ROOT / "data" / "generated"
             SQL_FILE = ROOT / "sql" / "experiment_mart.sql"
@@ -88,7 +83,7 @@ def build_notebook() -> None:
         code(
             "validate-events",
             """
-            # pandas filter + merge: проверить покрытие событий назначениями.
+            # Проверить временной порядок событий после назначения варианта.
             post_assignment_events = events.merge(
                 assignments[["user_id", "assigned_at", "variant"]],
                 on="user_id", how="left", validate="many_to_one"
@@ -100,29 +95,41 @@ def build_notebook() -> None:
         code(
             "build-mart",
             """
-            # SQL builds a one-row-per-user mart with CTEs, joins and window functions.
+            # Один пользователь на строку; проверки перед расчётом эффекта.
             mart = build_mart(DATA_DIR, SQL_FILE)
             checks = quality_checks(users, assignments, events, mart)
             pd.DataFrame(checks)
             """
         ),
         code(
+            "current-summary",
+            """
+            results, segment_results = calculate_results(mart)
+            display(Markdown(notebook_summary(results)))
+            """
+        ),
+        markdown(
+            "table-definitions",
+            """
+            ### Основные показатели
+
+            `conversion` — доля забронировавших среди всех пользователей варианта.
+            `cancellation_among_bookers` — доля отмен среди забронировавших;
+            `mean_time_to_book_among_bookers` — среднее время бронирования в секундах
+            среди той же группы. Доли в таблице указаны от 0 до 1.
+            """
+        ),
+        code(
             "itt-summary",
             """
-            # pandas groupby makes the ITT denominators visible before inferential tests.
-            mart.groupby("variant", observed=True).agg(
-                users=("user_id", "nunique"),
-                conversion=("booked", "mean"),
-                cancellation=("cancelled_24h", "mean"),
-                median_time_to_book=("time_to_book_seconds", "median"),
-            )
+            # Отмены и время бронирования считаются только среди забронировавших.
+            overview = experiment_overview(mart)
+            display(HTML(overview.to_html()))
             """
         ),
         code(
             "inferential-results",
             """
-            results, segment_results = calculate_results(mart)
-            print(json.dumps(results, ensure_ascii=False, indent=2))
             segment_results
             """
         ),
